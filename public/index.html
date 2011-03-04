@@ -9,29 +9,56 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-	<style>
+  <style>
 
-	div#minimapcontainer {
+  div#minimapcontainer {
 
-	}
-	canvas#minimap {
-	 position : absolute;
-	}
-	canvas#minimapobjects {
-	 position : absolute;
-	}
+  }
+  canvas#minimap {
+   position : absolute;
+  }
+  canvas#minimapobjects {
+   position : absolute;
+  }
+
+  div#floor {
+   position : absolute;
+   width : 100%;
+   height : 100%;
+   background-color : rgb(128,128,128);
+  }
+
+  div#ceiling {
+   position : absolute;
+   width : 100%;
+   height : 50%;
+   background-color : rgb(96,96,96);
+  }
 
 
-	</style>
+  #screen {
+   position : relative;
+   width : 320px;
+   height : 200px;
+   border : 1px solid black;
+   overflow : hidden;
+  }
+  
+
+
+  </style>
 </head>
 
 <body>
-
-      <div id="minimapcontainer">
-				<canvas id="minimap"></canvas>
-				<canvas id="minimapobjects"></canvas>
-			</div>			
-    
+    <div id="screen">
+      <div id="floor"></div>
+      <div id="ceiling"></div>
+    </div>
+      
+    <div id="minimapcontainer">
+      <canvas id="minimap"></canvas>
+      <canvas id="minimapobjects"></canvas>
+    </div>
   <script src="/js/libs/jquery-1.5.min.js"></script>
   <script src="/js/concatenation.js"></script>  
   <script src="/js/plugins.js"></script>

@@ -1,5 +1,5 @@
 (function() {
-  var $, Player, bindKeys, castRays, castSingleRay, dc, drawMiniMap, drawRay, gameCycle, init, isBlocking, updateMiniMap;
+  var $, Player, bindKeys, castRays, castSingleRay, dc, drawMiniMap, drawRay, gameCycle, init, initScreen, isBlocking, updateMiniMap;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $ = function(id) {
     return document.getElementById(id);
@@ -12,12 +12,36 @@
   this.mapHeight = 0;
   this.miniMapScale = 8;
   this.frameRate = 30;
+  this.screenStrips = [];
   init = function() {
     this.player = new Player();
     this.mapWidth = this.map[0].length;
     this.mapHeight = this.map.length;
+    initScreen();
     drawMiniMap();
     return gameCycle();
+  };
+  initScreen = function() {
+    var i, img, screen, strip, _ref, _results;
+    screen = $("screen");
+    _results = [];
+    for (i = 0, _ref = this.screenWidth; (0 <= _ref ? i <= _ref : i >= _ref); i += this.stripWidth) {
+      strip = dc("div");
+      strip.style.position = "absolute";
+      strip.style.left = i + "px";
+      strip.style.width = this.stripWidth + "px";
+      strip.style.height = "0px";
+      strip.style.overflow = "hidden";
+      img = new Image();
+      img.src = "/img/walls.png";
+      img.style.position = "absolute";
+      img.style.left = "0px";
+      strip.appendChild(img);
+      strip.img = img;
+      this.screenStrips.push(strip);
+      _results.push(screen.appendChild(strip));
+    }
+    return _results;
   };
   gameCycle = function() {
     this.player.move();
@@ -122,12 +146,14 @@
     return Player;
   })();
   this.screenWidth = 320;
+  this.screenHeight = 200;
   this.stripWidth = 4;
   this.fov = 60 * Math.PI / 180;
   this.numRays = Math.ceil(this.screenWidth / this.stripWidth);
   this.fovHalf = this.fov / 2;
   this.viewDist = (this.screenWidth / 2) / Math.tan(this.fov / 2);
   this.twoPI = Math.PI * 2;
+  this.numTextures = 4;
   castRays = function() {
     var rayAngle, rayIndex, rayScreenPosition, rayViewDistance, stripId, _ref, _results;
     stripId = 0;
@@ -141,7 +167,7 @@
     return _results;
   };
   castSingleRay = function(rayAngle, stripId) {
-    var angleCos, angleSin, blockDist, dX, dY, dist, distX, distY, right, slope, textureX, up, wallX, wallY, x, xHit, y, yHit;
+    var angleCos, angleSin, blockDist, dXHor, dXVer, dYHor, dYVer, dist, distX, distY, height, right, slope, strip, texX, textureX, top, up, wallType, wallX, wallY, width, x, xHit, y, yHit;
     rayAngle %= this.twoPI;
     if (rayAngle < 0) {
       rayAngle += this.twoPI;
@@ -157,8 +183,8 @@
     wallX;
     wallY;
     slope = angleSin / angleCos;
-    dX = right ? 1 : -1;
-    dY = dX * slope;
+    dXVer = right ? 1 : -1;
+    dYVer = dXVer * slope;
     x = right ? Math.ceil(this.player.x) : Math.floor(this.player.x);
     y = this.player.y + (x - this.player.x) * slope;
     while (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
@@ -168,6 +194,7 @@
         distX = x - this.player.x;
         distY = y - this.player.y;
         dist = distX * distX + distY * distY;
+        wallType = map[wallY][wallX];
         textureX = y % 1;
         if (!right) {
           textureX = 1 - textureX;
@@ -176,12 +203,12 @@
         yHit = y;
         break;
       }
-      x += dX;
-      y += dY;
+      x += dXVer;
+      y += dYVer;
     }
     slope = angleCos / angleSin;
-    dY = up ? -1 : 1;
-    dX = dY * slope;
+    dYHor = up ? -1 : 1;
+    dXHor = dYHor * slope;
     y = up ? Math.floor(this.player.y) : Math.ceil(this.player.y);
     x = this.player.x + (y - this.player.y) * slope;
     while (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
@@ -195,6 +222,7 @@
           dist = blockDist;
           xHit = x;
           yHit = y;
+          wallType = map[wallY][wallX];
           textureX = x % 1;
           if (up) {
             textureX = 1 - textureX;
@@ -202,11 +230,26 @@
         }
         break;
       }
-      x += dX;
-      y += dY;
+      x += dXHor;
+      y += dYHor;
     }
     if (dist) {
-      return drawRay(xHit, yHit);
+      strip = this.screenStrips[stripId];
+      dist = Math.sqrt(dist);
+      dist = dist * Math.cos(this.player.rotation - rayAngle);
+      height = Math.round(this.viewDist / dist);
+      width = height * this.stripWidth;
+      top = Math.round((this.screenHeight - height) / 2);
+      strip.style.height = height + "px";
+      strip.style.top = top + "px";
+      strip.img.style.height = Math.floor(height * this.numTextures) + "px";
+      strip.img.style.width = Math.floor(width * 2) + "px";
+      strip.img.style.top = -Math.floor(height * (wallType - 1)) + "px";
+      texX = Math.round(textureX * width);
+      if (texX > width - this.stripWidth) {
+        texX = width - this.stripWidth;
+      }
+      return strip.img.style.left = -texX + "px";
     }
   };
   drawRay = function(rayX, rayY) {

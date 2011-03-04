@@ -33,13 +33,33 @@ dc = (tag) -> document.createElement(tag)
 @mapHeight = 0 #number of map blocks in y-direction
 @miniMapScale = 8 #how many pixels to draw a map block
 @frameRate = 30 #FPS
+@screenStrips = [];
 
 init = () ->
   @player = new Player()
   @mapWidth = @map[0].length
   @mapHeight = @map.length
+  initScreen()
   drawMiniMap()
   gameCycle()
+
+initScreen = () ->
+  screen = $("screen")
+  for i in [0..@screenWidth] by @stripWidth
+    strip = dc("div")
+    strip.style.position = "absolute"
+    strip.style.left = i + "px"
+    strip.style.width = @stripWidth+"px"
+    strip.style.height = "0px"
+    strip.style.overflow = "hidden"
+    img = new Image()
+    img.src = "/img/walls.png"
+    img.style.position = "absolute"
+    img.style.left = "0px"
+    strip.appendChild(img)
+    strip.img = img; #assign the image to a property on the strip element so we have easy access to the image later
+    @screenStrips.push(strip)
+    screen.appendChild(strip)
 
 gameCycle = () ->
   @player.move()
