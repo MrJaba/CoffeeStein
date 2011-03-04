@@ -1,5 +1,5 @@
 (function() {
-  var $, Player, bindKeys, castRays, castSingleRay, dc, drawMiniMap, drawRay, gameCycle, init, initScreen, isBlocking, updateMiniMap;
+  var $, Player, bindKeys, castRays, castSingleRay, checkVerticalLines, dc, drawMiniMap, drawRay, facingRight, facingUp, gameCycle, init, initScreen, isBlocking, updateMiniMap;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $ = function(id) {
     return document.getElementById(id);
@@ -154,6 +154,12 @@
   this.viewDist = (this.screenWidth / 2) / Math.tan(this.fov / 2);
   this.twoPI = Math.PI * 2;
   this.numTextures = 4;
+  facingRight = function(rayAngle) {
+    return rayAngle > this.twoPI * 0.75 || rayAngle < this.twoPI * 0.25;
+  };
+  facingUp = function(rayAngle) {
+    return rayAngle < 0 || rayAngle > Math.PI;
+  };
   castRays = function() {
     var rayAngle, rayIndex, rayScreenPosition, rayViewDistance, stripId, _ref, _results;
     stripId = 0;
@@ -167,45 +173,16 @@
     return _results;
   };
   castSingleRay = function(rayAngle, stripId) {
-    var angleCos, angleSin, blockDist, dXHor, dXVer, dYHor, dYVer, dist, distX, distY, height, right, slope, strip, texX, textureX, top, up, wallType, wallX, wallY, width, x, xHit, y, yHit;
+    var angleCos, angleSin, blockDist, dXHor, dYHor, dist, distX, distY, height, right, slope, strip, texX, textureX, top, up, wallType, wallX, wallY, width, x, xHit, y, yHit, _ref;
     rayAngle %= this.twoPI;
     if (rayAngle < 0) {
       rayAngle += this.twoPI;
     }
-    right = rayAngle > this.twoPI * 0.75 || rayAngle < this.twoPI * 0.25;
-    up = rayAngle < 0 || rayAngle > Math.PI;
     angleSin = Math.sin(rayAngle);
     angleCos = Math.cos(rayAngle);
-    dist = 0;
-    xHit = 0;
-    yHit = 0;
-    textureX;
-    wallX;
-    wallY;
-    slope = angleSin / angleCos;
-    dXVer = right ? 1 : -1;
-    dYVer = dXVer * slope;
-    x = right ? Math.ceil(this.player.x) : Math.floor(this.player.x);
-    y = this.player.y + (x - this.player.x) * slope;
-    while (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-      wallX = Math.floor(x + (right ? 0 : -1));
-      wallY = Math.floor(y);
-      if (map[wallY][wallX] > 0) {
-        distX = x - this.player.x;
-        distY = y - this.player.y;
-        dist = distX * distX + distY * distY;
-        wallType = map[wallY][wallX];
-        textureX = y % 1;
-        if (!right) {
-          textureX = 1 - textureX;
-        }
-        xHit = x;
-        yHit = y;
-        break;
-      }
-      x += dXVer;
-      y += dYVer;
-    }
+    right = facingRight(rayAngle);
+    up = facingUp(rayAngle);
+    _ref = checkVerticalLines(right, up, angleSin, angleCos), dist = _ref[0], wallType = _ref[1], textureX = _ref[2];
     slope = angleCos / angleSin;
     dYHor = up ? -1 : 1;
     dXHor = dYHor * slope;
@@ -251,6 +228,34 @@
       }
       return strip.img.style.left = -texX + "px";
     }
+  };
+  checkVerticalLines = function(right, up, angleSin, angleCos) {
+    var dXVer, dYVer, dist, distX, distY, slope, textureX, wallType, wallX, wallY, x, xHit, y, yHit;
+    slope = angleSin / angleCos;
+    dXVer = right ? 1 : -1;
+    dYVer = dXVer * slope;
+    x = right ? Math.ceil(this.player.x) : Math.floor(this.player.x);
+    y = this.player.y + (x - this.player.x) * slope;
+    while (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
+      wallX = Math.floor(x + (right ? 0 : -1));
+      wallY = Math.floor(y);
+      if (map[wallY][wallX] > 0) {
+        distX = x - this.player.x;
+        distY = y - this.player.y;
+        dist = distX * distX + distY * distY;
+        wallType = map[wallY][wallX];
+        textureX = y % 1;
+        if (!right) {
+          textureX = 1 - textureX;
+        }
+        xHit = x;
+        yHit = y;
+        break;
+      }
+      x += dXVer;
+      y += dYVer;
+    }
+    return [dist, wallType, textureX];
   };
   drawRay = function(rayX, rayY) {
     var miniMapObjects, objectContext;
