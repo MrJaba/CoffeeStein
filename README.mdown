@@ -1,6 +1,6 @@
 # What is this?
+This is a port of a javascript implementation of the raycaster from Wolfenstein3d to CoffeeScript. Done as a learning exercise, I hope to expand upon it in future. 
 
-
-
-# Installation
+Based on:
+http://dev.opera.com/articles/view/creating-pseudo-3d-games-with-html-5-can-1/
 
