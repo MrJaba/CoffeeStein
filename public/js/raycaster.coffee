@@ -52,6 +52,7 @@ class Raycaster
       this.castSingleRay( @player.rotation + rayAngle, rayIndex )
     
   castSingleRay: (rayAngle, stripId) ->
+    @dist = null
     # first make sure the angle is between 0 and 360 degrees
     rayAngle %= @twoPI
     rayAngle += @twoPI if rayAngle < 0
@@ -71,7 +72,6 @@ class Raycaster
     # the only difference here is that once we hit a map block, 
     # we check if there we also found one in the earlier, vertical run. We'll know that if dist != 0.
     # If so, we only register this hit if this distance is smaller.
-    console.log(@dist)
     this.checkHorizontalLines(right, up)
     this.drawWall(stripId, rayAngle) if @dist
     

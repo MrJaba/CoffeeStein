@@ -184,6 +184,7 @@
     };
     Raycaster.prototype.castSingleRay = function(rayAngle, stripId) {
       var right, up;
+      this.dist = null;
       rayAngle %= this.twoPI;
       if (rayAngle < 0) {
         rayAngle += this.twoPI;
@@ -193,7 +194,6 @@
       right = this.facingRight(rayAngle);
       up = this.facingUp(rayAngle);
       this.checkVerticalLines(right, up);
-      console.log(this.dist);
       this.checkHorizontalLines(right, up);
       if (this.dist) {
         return this.drawWall(stripId, rayAngle);
